@@ -67,7 +67,7 @@ if 'abas_selecionadas' not in st.session_state:
 # Etapa 1: Upload de arquivos
 st.header("1️⃣ Upload dos Arquivos")
 uploaded_files = st.file_uploader(
-    "Selecione os arquivos Excel (.xlsx, .xls)",
+    "Selecione os arquivos Excel: (.xlsx, .xls)",
     type=['xlsx', 'xls'],
     accept_multiple_files=True,
     help="Você pode selecionar múltiplos arquivos de uma vez"
@@ -143,7 +143,7 @@ if st.session_state.estrutura:
         st.metric("📋 Total de Abas", len(estrutura['todas_abas_nomes']))
     
     # Detalhes de cada arquivo
-    with st.expander("🔎 Ver detalhes de cada arquivo"):
+    with st.expander("🔎 Ver detalhes de cada arquivo."):
         for info in estrutura['completa']:
             st.write(f"**{info['arquivo']}** - {info['num_abas']} aba(s)")
             for idx, nome in enumerate(info['nomes'], 1):
@@ -314,7 +314,7 @@ if st.session_state.modo:
                 except Exception as e:
                     st.error(f"❌ Erro durante a consolidação: {e}")
     else:
-        st.info("👆 Selecione pelo menos uma aba para continuar")
+        st.info("👆 Selecione pelo menos uma aba para continuar.")
 
 # Botão de reset
 if st.session_state.estrutura or st.session_state.modo:

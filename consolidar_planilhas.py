@@ -63,6 +63,8 @@ if 'modo' not in st.session_state:
     st.session_state.modo = None
 if 'abas_selecionadas' not in st.session_state:
     st.session_state.abas_selecionadas = []
+if 'multiselect_key' not in st.session_state:
+    st.session_state.multiselect_key = 0
 
 # Etapa 1: Upload de arquivos
 st.header("1️⃣ Upload dos Arquivos")
@@ -197,22 +199,32 @@ if st.session_state.modo:
         
         st.write("**Selecione as posições:**")
         
-        if st.button("✅ Selecionar Todas", key="select_all_pos"):
-            st.session_state.abas_selecionadas = list(opcoes_posicao.keys())
-            st.rerun()
+        # Armazenar todas as opções
+        todas_posicoes = list(opcoes_posicao.keys())
         
-        abas_selecionadas_temp = []
-        cols = st.columns(3)
-        for idx, (pos, info) in enumerate(opcoes_posicao.items()):
-            with cols[idx % 3]:
-                if st.checkbox(
-                    f"{info['label']}",
-                    value=pos in st.session_state.abas_selecionadas,
-                    key=f"pos_{pos}"
-                ):
-                    abas_selecionadas_temp.append(pos)
+        col_btn1, col_btn2 = st.columns([1, 3])
+        with col_btn1:
+            if st.button("✅ Selecionar Todas", key="select_all_pos"):
+                st.session_state.abas_selecionadas = todas_posicoes
+                st.session_state.multiselect_key += 1
+        with col_btn2:
+            if st.button("❌ Limpar Seleção", key="clear_all_pos"):
+                st.session_state.abas_selecionadas = []
+                st.session_state.multiselect_key += 1
         
-        st.session_state.abas_selecionadas = abas_selecionadas_temp
+        # Criar lista de opções formatadas
+        opcoes_formatadas = {pos: info['label'] for pos, info in opcoes_posicao.items()}
+        
+        # Usar multiselect com key dinâmica
+        selecionadas = st.multiselect(
+            "Escolha as posições para consolidar:",
+            options=todas_posicoes,
+            default=st.session_state.abas_selecionadas,
+            format_func=lambda x: opcoes_formatadas[x],
+            key=f"multiselect_pos_{st.session_state.multiselect_key}"
+        )
+        
+        st.session_state.abas_selecionadas = selecionadas
         
     else:  # modo == 'nome'
         # Consolidar por nome
@@ -221,22 +233,30 @@ if st.session_state.modo:
         
         st.write("**Selecione os nomes das abas:**")
         
-        if st.button("✅ Selecionar Todas", key="select_all_name"):
-            st.session_state.abas_selecionadas = nomes_unicos
-            st.rerun()
+        col_btn1, col_btn2 = st.columns([1, 3])
+        with col_btn1:
+            if st.button("✅ Selecionar Todas", key="select_all_name"):
+                st.session_state.abas_selecionadas = nomes_unicos.copy()
+                st.session_state.multiselect_key += 1
+        with col_btn2:
+            if st.button("❌ Limpar Seleção", key="clear_all_name"):
+                st.session_state.abas_selecionadas = []
+                st.session_state.multiselect_key += 1
         
-        abas_selecionadas_temp = []
-        cols = st.columns(3)
-        for idx, nome in enumerate(nomes_unicos):
-            with cols[idx % 3]:
-                if st.checkbox(
-                    f"{nome} ({contador[nome]}x)",
-                    value=nome in st.session_state.abas_selecionadas,
-                    key=f"nome_{nome}"
-                ):
-                    abas_selecionadas_temp.append(nome)
+        # Criar função de formatação para mostrar contagem
+        def formatar_nome(nome):
+            return f"{nome} ({contador[nome]}x)"
         
-        st.session_state.abas_selecionadas = abas_selecionadas_temp
+        # Usar multiselect com key dinâmica
+        selecionadas = st.multiselect(
+            "Escolha os nomes das abas para consolidar:",
+            options=nomes_unicos,
+            default=st.session_state.abas_selecionadas,
+            format_func=formatar_nome,
+            key=f"multiselect_name_{st.session_state.multiselect_key}"
+        )
+        
+        st.session_state.abas_selecionadas = selecionadas
     
     # Botão de consolidar
     if st.session_state.abas_selecionadas:

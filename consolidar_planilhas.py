@@ -301,11 +301,19 @@ if st.session_state.modo:
                                 df_consolidado = pd.concat(lista_dfs, ignore_index=True)
                                 
                                 if st.session_state.modo == 'posicao':
-                                    nome_aba_destino = f'Aba{aba_id}_Consolidada'
+                                    # Obter o nome original da primeira aba nesta posição
+                                    nome_aba_destino = None
+                                    for info in st.session_state.estrutura['completa']:
+                                        if aba_id <= len(info['nomes']):
+                                            nome_aba_destino = info['nomes'][aba_id - 1]
+                                            break
+                                    if nome_aba_destino is None:
+                                        nome_aba_destino = f'Aba{aba_id}'
                                 else:
-                                    nome_aba_destino = f'{aba_id}_Consolidada'
+                                    # Usar o nome original da aba
+                                    nome_aba_destino = str(aba_id)
                                 
-                                # Limitar a 31 caracteres
+                                # Limitar a 31 caracteres (limite do Excel)
                                 nome_aba_destino = nome_aba_destino[:31]
                                 
                                 df_consolidado.to_excel(writer, sheet_name=nome_aba_destino, index=False)

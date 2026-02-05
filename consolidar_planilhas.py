@@ -158,15 +158,17 @@ if st.session_state.estrutura:
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📍 Consolidar por POSIÇÃO", use_container_width=True):
+        if st.button("📍 Consolidar por POSIÇÃO", use_container_width=True, key="btn_modo_posicao"):
             st.session_state.modo = 'posicao'
             st.session_state.abas_selecionadas = []
+            st.session_state.multiselect_key = 0
         st.caption("Junta todas as 1ª abas, todas as 2ª abas, etc.")
     
     with col2:
-        if st.button("🏷️ Consolidar por NOME", use_container_width=True):
+        if st.button("🏷️ Consolidar por NOME", use_container_width=True, key="btn_modo_nome"):
             st.session_state.modo = 'nome'
             st.session_state.abas_selecionadas = []
+            st.session_state.multiselect_key = 0
         st.caption("Junta todas as abas 'Vendas', todas 'Estoque', etc.")
 
 # Etapa 3: Selecionar abas
@@ -203,21 +205,27 @@ if st.session_state.modo:
         with col_btn1:
             if st.button("✅ Selecionar Todas", key="select_all_pos"):
                 st.session_state.abas_selecionadas = todas_posicoes
+                st.session_state.multiselect_key += 1
         with col_btn2:
             if st.button("❌ Limpar Seleção", key="clear_all_pos"):
                 st.session_state.abas_selecionadas = []
+                st.session_state.multiselect_key += 1
         
         # Criar lista de opções formatadas
         opcoes_formatadas = {pos: info['label'] for pos, info in opcoes_posicao.items()}
         
-        # Usar multiselect
-        st.session_state.abas_selecionadas = st.multiselect(
+        # Usar multiselect com key dinâmica para forçar atualização
+        selecionadas = st.multiselect(
             "Escolha as posições para consolidar:",
             options=todas_posicoes,
             default=st.session_state.abas_selecionadas,
             format_func=lambda x: opcoes_formatadas[x],
-            key="multiselect_pos"
+            key=f"multiselect_pos_{st.session_state.multiselect_key}"
         )
+        
+        # Atualizar apenas se houve mudança manual
+        if selecionadas != st.session_state.abas_selecionadas:
+            st.session_state.abas_selecionadas = selecionadas
         
     else:  # modo == 'nome'
         # Consolidar por nome
@@ -230,22 +238,28 @@ if st.session_state.modo:
         with col_btn1:
             if st.button("✅ Selecionar Todas", key="select_all_name"):
                 st.session_state.abas_selecionadas = nomes_unicos.copy()
+                st.session_state.multiselect_key += 1
         with col_btn2:
             if st.button("❌ Limpar Seleção", key="clear_all_name"):
                 st.session_state.abas_selecionadas = []
+                st.session_state.multiselect_key += 1
         
         # Criar função de formatação para mostrar contagem
         def formatar_nome(nome):
             return f"{nome} ({contador[nome]}x)"
         
-        # Usar multiselect
-        st.session_state.abas_selecionadas = st.multiselect(
+        # Usar multiselect com key dinâmica para forçar atualização
+        selecionadas = st.multiselect(
             "Escolha os nomes das abas para consolidar:",
             options=nomes_unicos,
             default=st.session_state.abas_selecionadas,
             format_func=formatar_nome,
-            key="multiselect_name"
+            key=f"multiselect_name_{st.session_state.multiselect_key}"
         )
+        
+        # Atualizar apenas se houve mudança manual
+        if selecionadas != st.session_state.abas_selecionadas:
+            st.session_state.abas_selecionadas = selecionadas
     
     # Botão de consolidar
     if st.session_state.abas_selecionadas:
